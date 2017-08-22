@@ -372,12 +372,12 @@ procedure TForm1.OpenBtnClick(Sender: TObject);
 var
 	idx : integer;
 begin
-	OpenBtn.Enabled := false;
 	if OpenDialog1.Execute() then
 	begin
 		ashow := OpenDialog1.FileName;
 		OpenDialog1.FileName := ''; //clear;
 	end else exit; //we found nothing, so do nothing.
+	OpenBtn.Enabled := false;
 	Form1.Caption := ' BananaSplit86 - ' + ExtractFileName(ashow);
 
 	if DosCommand1.IsRunning then

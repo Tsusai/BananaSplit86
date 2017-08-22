@@ -111,6 +111,7 @@ begin
 		AJob
 	);
 	JobHelper.Add(AJob); //this owns the Job Object
+	JobList.TopIndex := JobList.Items.Count - 1;
 	JobList.Checked[idx] := true;
 	SaveINI;
 
@@ -149,6 +150,7 @@ begin
 	end;
 	Batch.SaveToFile('Jobs.cmd');
 	Batch.Free;
+	ShowMessage('Done, see Jobs.cmd');
 end;
 
 (*------------------------------------------------------------------------------
