@@ -12,6 +12,9 @@ type
 		JvFormMagnet1: TJvFormMagnet;
 		JobList: TCheckListBox;
 		BatchBtn: TButton;
+		ClearBtn: TButton;
+		DeSelBtn: TButton;
+		SelectBtn: TButton;
 		procedure FormShow(Sender: TObject);
 		procedure BatchBtnClick(Sender: TObject);
 		procedure JobListKeyDown(Sender: TObject; var Key: Word;
@@ -20,6 +23,9 @@ type
 		procedure FormDestroy(Sender: TObject);
 		procedure AddJob(const AFile : string; const tDuration : string);
 		procedure SaveINI;
+		procedure ClearBtnClick(Sender: TObject);
+		procedure SelectBtnClick(Sender: TObject);
+		procedure DeSelBtnClick(Sender: TObject);
 	private
 		{ Private declarations }
 	public
@@ -160,7 +166,10 @@ procedure TForm2.JobListKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	if (Key=VK_Delete) and (JobList.ItemIndex > -1) then
-	JobList.Items.Delete(JobList.ItemIndex);
+	begin
+		JobList.Items.Delete(JobList.ItemIndex);
+		JobHelper.Delete(JobList.ItemIndex);
+	end;
 end;
 
 procedure TForm2.FormCreate(Sender: TObject);
@@ -229,6 +238,26 @@ begin
 		ini.Free;
 	end;
 	tmp.Free;
+end;
+
+procedure TForm2.SelectBtnClick(Sender: TObject);
+var
+	idx : integer;
+begin
+	for idx := 0 to JobList.Count-1 do JobList.Checked[idx] := true;
+end;
+
+procedure TForm2.ClearBtnClick(Sender: TObject);
+begin
+	JobList.Clear;
+	JobHelper.Clear;
+end;
+
+procedure TForm2.DeSelBtnClick(Sender: TObject);
+var
+	idx : integer;
+begin
+	for idx := 0 to JobList.Count-1 do JobList.Checked[idx] := false;
 end;
 
 procedure TForm2.FormDestroy(Sender: TObject);

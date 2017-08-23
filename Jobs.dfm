@@ -37,12 +37,39 @@ object Form2: TForm2
     TabOrder = 1
     OnClick = BatchBtnClick
   end
+  object ClearBtn: TButton
+    Left = 8
+    Top = 375
+    Width = 75
+    Height = 25
+    Caption = 'Clear Jobs'
+    TabOrder = 2
+    OnClick = ClearBtnClick
+  end
+  object DeSelBtn: TButton
+    Left = 511
+    Top = 375
+    Width = 75
+    Height = 25
+    Caption = 'Deselect All'
+    TabOrder = 3
+    OnClick = DeSelBtnClick
+  end
+  object SelectBtn: TButton
+    Left = 430
+    Top = 375
+    Width = 75
+    Height = 25
+    Caption = 'Select All'
+    TabOrder = 4
+    OnClick = SelectBtnClick
+  end
   object JvFormMagnet1: TJvFormMagnet
     Active = True
     ScreenMagnet = False
     Area = 10
     FormMagnet = True
-    Left = 32
+    Left = 88
     Top = 376
   end
 end
