@@ -78,11 +78,9 @@ type
 		EndS : string;
 		MiddleS : string;
 		DurationS : string;
-		//function GetDuration : string;
-		function SecondsToTTime(Sec : single) : TTime;
-	public
 		Thumb1 : TJpegImage;
 		Thumb2 : TJpegImage;
+		function SecondsToTTime(Sec : single) : TTime;
 		procedure SetStart(Sec : single);
 		procedure SetEnd(Sec : single);
 		procedure SetMiddle;
@@ -92,11 +90,9 @@ type
 	end;
 
 const
-	//ffmpeg = 'C:\Users\Tsusai\Google Drive\MKLINK\VideoEncoding\RipBot264\Tools\ffmpeg\bin\ffmpeg.exe';
 	gap = 2;
 
 var
-	SegHelper : TObjectlist;
 	cDuration : single = 0;
 	tDuration : string;
 	ashow : string;
@@ -301,8 +297,7 @@ begin
 		Segment.SetMiddle;
 
 		Form1.BlackSegList.AddItem(Segment.MiddleS,Segment);
-		SegHelper.Add(Segment);
-		//Segment.Free; OWNED BY SEGHELPER DO NOT FREE
+		//Segment.Free; "OWNED" BY BlackSegList DO NOT FREE
 	end;
 	AList.Free;
 end;
@@ -391,8 +386,13 @@ begin
 	Thumb1.Picture.Assign(nil);
 	Thumb2.Picture.Assign(nil);
 	CutList.Clear;
-	BlackSegList.Clear;
-	SegHelper.Clear;
+
+	//Free and clear the list.
+	for idx := BlackSegList.Count-1 downto 0 do
+	begin
+		BlackSegList.Items.Objects[idx].Free;
+		BlackSegList.Items.Delete(idx);
+	end;
 
 	GetBlackSegments;
 
@@ -463,6 +463,7 @@ begin
 			//NEVERMIND
 			//This seems to work the best. Middle is too soon, end is too late, so go half way between mid and end
 			//CutPoints.Add(FormatDateTime('hh:mm:ss.z', Segment._middle + ((Segment._end - Segment._middle)/2)));
+			//This number is updated/overwritten by Silence Detection
 			CutPoints.Add(Segment.MiddleS);
 		end;
 	end;
@@ -517,8 +518,6 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
 	ini : TMemIniFile;
 begin
-	SegHelper := TObjectList.Create;
-	SegHelper.OwnsObjects := true;
 	ini := TMemIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
 	ffmpeg := ini.ReadString('FFmpeg','Executable','c:\full path to exe without quotes please');
 	ini.Free;
@@ -534,13 +533,17 @@ end;
 procedure TForm1.FormDestroy(Sender: TObject);
 var
 	ini : TMemIniFile;
+	idx : integer;
 begin
 	ini := TMemIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
 	ini.WriteString('FFmpeg','Executable',ffmpeg);
 	ini.UpdateFile;
 	ini.Free;
-
-	SegHelper.Free;
+	for idx := BlackSegList.Count-1 downto 0 do
+	begin
+		BlackSegList.Items.Objects[idx].Free;
+		BlackSegList.Items.Delete(idx);
+	end;
 end;
 
 procedure TForm1.BlackSegListClick(Sender: TObject);

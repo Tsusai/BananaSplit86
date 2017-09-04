@@ -5,7 +5,7 @@ interface
 uses
 	Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
 	Vcl.Controls, Vcl.Forms, Vcl.Dialogs, JvComponentBase, JvFormMagnet,
-	Vcl.StdCtrls, Vcl.CheckLst;
+	Vcl.StdCtrls, Vcl.CheckLst, Vcl.Buttons;
 
 type
 	TForm2 = class(TForm)
@@ -15,6 +15,8 @@ type
 		ClearBtn: TButton;
 		DeSelBtn: TButton;
 		SelectBtn: TButton;
+    UpBtn: TButton;
+    DownBtn: TButton;
 		procedure FormShow(Sender: TObject);
 		procedure BatchBtnClick(Sender: TObject);
 		procedure JobListKeyDown(Sender: TObject; var Key: Word;
@@ -22,10 +24,13 @@ type
 		procedure FormCreate(Sender: TObject);
 		procedure FormDestroy(Sender: TObject);
 		procedure AddJob(const AFile : string; const tDuration : string);
+		procedure CleanJobs;
 		procedure SaveINI;
 		procedure ClearBtnClick(Sender: TObject);
 		procedure SelectBtnClick(Sender: TObject);
 		procedure DeSelBtnClick(Sender: TObject);
+    procedure UpBtnClick(Sender: TObject);
+    procedure DownBtnClick(Sender: TObject);
 	private
 		{ Private declarations }
 	public
@@ -49,9 +54,6 @@ type TJobObj = class
 	constructor Create;
 	destructor Destroy; override;
 end;
-
-var
-	JobHelper : TObjectList;
 
 {$R *.dfm}
 
@@ -116,11 +118,20 @@ begin
 		Format(Line,[AJob.Cuts.Count-1,ExtractFileName(AJob.TheShow)]),
 		AJob
 	);
-	JobHelper.Add(AJob); //this owns the Job Object
 	JobList.TopIndex := JobList.Items.Count - 1;
 	JobList.Checked[idx] := true;
 	SaveINI;
+end;
 
+procedure TForm2.CleanJobs;
+var
+	idx : integer;
+begin
+	for idx := JobList.Count - 1 downto 0 do
+	begin
+		JobList.Items.Objects[idx].Free;
+		JobList.Items.Delete(idx);
+	end;
 end;
 
 (*------------------------------------------------------------------------------
@@ -159,6 +170,7 @@ begin
 	ShowMessage('Done, see Jobs.cmd');
 end;
 
+
 (*------------------------------------------------------------------------------
 Form Controls
 ------------------------------------------------------------------------------*)
@@ -167,8 +179,8 @@ procedure TForm2.JobListKeyDown(Sender: TObject; var Key: Word;
 begin
 	if (Key=VK_Delete) and (JobList.ItemIndex > -1) then
 	begin
+		JobList.Items.Objects[JobList.ItemIndex].Free;
 		JobList.Items.Delete(JobList.ItemIndex);
-		JobHelper.Delete(JobList.ItemIndex);
 	end;
 end;
 
@@ -184,8 +196,6 @@ var
 begin
 	JobInfo := TStringList.Create;
 	JobLines := TStringList.Create;
-	JobHelper := TObjectList.Create;
-	JobHelper.OwnsObjects := true;
 	ini := TMemIniFile.Create('Jobs.ini');
 	try
 		JobLines.Clear;
@@ -202,7 +212,6 @@ begin
 				Format(Line,[AJob.Cuts.Count-1,ExtractFileName(AJob.TheShow)]),
 				AJob
 			);
-			JobHelper.Add(AJob); //this owns the Job Object
 			JobList.Checked[i] := ini.ReadBool('Jobs', JobLines[i], False);
 		end;
 	finally
@@ -249,8 +258,7 @@ end;
 
 procedure TForm2.ClearBtnClick(Sender: TObject);
 begin
-	JobList.Clear;
-	JobHelper.Clear;
+	CleanJobs;
 end;
 
 procedure TForm2.DeSelBtnClick(Sender: TObject);
@@ -263,7 +271,7 @@ end;
 procedure TForm2.FormDestroy(Sender: TObject);
 begin
 	SaveINI;
-	JobHelper.Free;
+	CleanJobs;
 end;
 
 procedure TForm2.FormShow(Sender: TObject);
@@ -271,6 +279,22 @@ begin
 	Self.Left := Form1.Left+Form1.Width;
 	Self.Top  := Form1.Top;
 	Self.Height := Form1.Height;
+end;
+
+procedure TForm2.UpBtnClick(Sender: TObject);
+var
+	i: Integer;
+begin
+	i := JobList.ItemIndex;
+	if i > 1 then JobList.Items.Exchange(i, i - 1);
+end;
+
+procedure TForm2.DownBtnClick(Sender: TObject);
+var
+	i: Integer;
+begin
+	i := JobList.ItemIndex + 1;
+	if i < JobList.Items.Count then JobList.Items.Exchange(i, i - 1);
 end;
 
 end.
